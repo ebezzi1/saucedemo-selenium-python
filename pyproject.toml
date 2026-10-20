@@ -10,7 +10,6 @@ addopts = "-ra --strict-markers --html=reports/report.html --self-contained-html
 markers = [
     "smoke: critical-path checks, fast enough to run on every push",
     "defects: documents known defects of SauceDemo's broken demo accounts",
-    "slow: timing-based checks",
 ]
 
 [tool.ruff]

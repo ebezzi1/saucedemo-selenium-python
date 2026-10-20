@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from typing import Self, TypeVar
 
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
@@ -49,12 +50,23 @@ class BasePage:
             self.ready_marker.find()
         return self
 
+    def is_loaded(self) -> bool:
+        try:
+            self.wait_until_loaded()
+        except TimeoutException:
+            return False
+        return True
+
     def is_current(self) -> bool:
         return self.driver.current_url == self.url
 
+    def page(self, page_cls: type[P]) -> P:
+        """Another page sharing this page's driver and settings."""
+        return page_cls(self.driver, self.base_url, self.timeout)
+
     def go_to(self, page_cls: type[P]) -> P:
-        """Construct another page sharing this page's driver and settings, once it has loaded."""
-        return page_cls(self.driver, self.base_url, self.timeout).wait_until_loaded()
+        """Another page, once it has loaded."""
+        return self.page(page_cls).wait_until_loaded()
 
 
 class AuthenticatedPage(BasePage):
