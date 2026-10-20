@@ -3,6 +3,7 @@ from __future__ import annotations
 from copy import copy
 
 from selenium.common.exceptions import StaleElementReferenceException
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
@@ -68,9 +69,15 @@ class BaseElement:
             EC.element_to_be_clickable(self.locator), f"{self!r} not clickable"
         ).click()
 
+    def hover(self) -> None:
+        ActionChains(self.driver).move_to_element(self.find()).perform()
+
     @property
     def text(self) -> str:
         return self.find().text
+
+    def css(self, prop: str) -> str:
+        return self.find().value_of_css_property(prop)
 
     def is_displayed(self) -> bool:
         """Non-waiting visibility check, safe to use for asserting absence."""

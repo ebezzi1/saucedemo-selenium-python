@@ -19,6 +19,12 @@ class InventoryPage(ProductListPage):
     item_images = Collection(By.CSS_SELECTOR, "img.inventory_item_img")
     add_to_cart_button = Button(By.CSS_SELECTOR, "[data-test='add-to-cart-{slug}']")
     remove_button = Button(By.CSS_SELECTOR, "[data-test='remove-{slug}']")
+    product_title = Text(By.XPATH, "//div[@data-test='inventory-item-name'][text()='{name}']")
+    product_price = Text(
+        By.XPATH,
+        "//div[@data-test='inventory-item'][.//div[text()='{name}']]"
+        "//div[@data-test='inventory-item-price']",
+    )
 
     @property
     def product_prices(self) -> list[float]:
@@ -45,6 +51,18 @@ class InventoryPage(ProductListPage):
 
     def is_in_cart(self, product: Product) -> bool:
         return self.remove_button.with_args(slug=product.slug).is_displayed()
+
+    def price_of(self, product: Product) -> float:
+        return parse_price(self.product_price.with_args(name=product).text)
+
+    def stored_cart(self) -> list[int]:
+        """Product ids SauceDemo keeps in local storage."""
+        return self.driver.execute_script(
+            "return JSON.parse(localStorage.getItem('cart-contents') || '[]')"
+        )
+
+    def clear_stored_cart(self) -> None:
+        self.driver.execute_script("localStorage.removeItem('cart-contents')")
 
     def open_cart(self) -> cart_page.CartPage:
         self.cart_link.click()

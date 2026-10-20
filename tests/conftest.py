@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import base64
 import os
 import re
 from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from framework.browsers import SUPPORTED_BROWSERS, create_driver
@@ -90,13 +92,19 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo):
     if web_driver is None:
         return
 
+    try:
+        screenshot = web_driver.get_screenshot_as_base64()
+        url = web_driver.current_url
+    except WebDriverException:  # e.g. an unhandled alert blocks the page
+        return
+
     SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
     file_name = re.sub(r"[^\w.-]", "_", item.nodeid) + ".png"
-    web_driver.save_screenshot(str(SCREENSHOT_DIR / file_name))
+    (SCREENSHOT_DIR / file_name).write_bytes(base64.b64decode(screenshot))
 
     pytest_html = item.config.pluginmanager.getplugin("html")
     if pytest_html is not None:
         extras = getattr(report, "extras", [])
-        extras.append(pytest_html.extras.png(web_driver.get_screenshot_as_base64(), "Screenshot"))
-        extras.append(pytest_html.extras.url(web_driver.current_url, "Page URL"))
+        extras.append(pytest_html.extras.png(screenshot, "Screenshot"))
+        extras.append(pytest_html.extras.url(url, "Page URL"))
         report.extras = extras

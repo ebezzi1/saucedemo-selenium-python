@@ -65,6 +65,13 @@ class BasePage:
         except TimeoutException:
             return False
 
+    def accept_alert(self) -> str:
+        """Wait for a browser alert, accept it and return its text."""
+        alert = WebDriverWait(self.driver, self.timeout).until(EC.alert_is_present())
+        text = alert.text
+        alert.accept()
+        return text
+
     def is_current(self) -> bool:
         return self.driver.current_url == self.url
 
