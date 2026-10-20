@@ -41,6 +41,8 @@ jobs:
       - name: Let Edge use its sandbox # Ubuntu 24.04 blocks it by default
         if: matrix.browser == 'edge'
         run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - name: Warm up the browser # resolve the driver once, before parallel workers start
+        run: python -c "from framework.browsers import create_driver; create_driver('${{ matrix.browser }}', headless=True).quit()"
       - name: Run tests
         run: pytest --browser ${{ matrix.browser }} --headless -n 4 --reruns 1
       - name: Upload report
