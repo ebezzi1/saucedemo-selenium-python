@@ -1,48 +1,70 @@
-# SauceDemo UI Test Automation — Selenium 4 + pytest
+# SauceDemo UI Test Automation: Selenium 4 + pytest
 
 [![UI tests](https://github.com/ebezzi1/saucedemo-selenium-python/actions/workflows/ui-tests.yml/badge.svg)](https://github.com/ebezzi1/saucedemo-selenium-python/actions/workflows/ui-tests.yml)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![Selenium](https://img.shields.io/badge/selenium-4-43B02A)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-An end-to-end UI test framework for [SauceDemo](https://www.saucedemo.com), a demo e-commerce
-store. It uses Selenium 4 and pytest with the Page Object Model and runs in CI against Chrome
-and Firefox.
+End-to-end UI tests for [SauceDemo](https://www.saucedemo.com), a demo e-commerce store. Built
+with Selenium 4, pytest and the Page Object Model, and run in CI on Chrome, Firefox and Edge.
 
-## Highlights
+## Selenium foundations covered
 
-- **Declarative page objects:** elements are descriptors (`username = Input(By.CSS_SELECTOR, ...)`)
-  that are located lazily with explicit waits. Tests never call `find_element` or `sleep`.
-- **Typed element wrappers:** `Button`, `Input`, `Dropdown`, `Collection`, `Text` and `Link`
-  hold the Selenium plumbing, including retries on stale elements while React re-renders.
-- **Parametrised locators:** `add_to_cart_button.with_args(slug=product.slug)` replaces
-  per-product locators.
-- **Fluent navigation:** `inventory.add_to_cart(...).open_cart().checkout().continue_to_overview(customer).finish()`
-- **Fast setup:** tests that aren't about login sign in by seeding the session cookie. Login
-  itself is covered through the UI in `test_login.py`.
-- **Data-driven tests:** users, products, sort options and validation cases are parametrised
-  from enums and dataclasses.
-- **Defect tracking:** the site's deliberately broken accounts are covered by
-  `xfail(strict=True)` tests. They document each bug and turn the build red if a bug
-  disappears or the check stops detecting it.
-- **Failure diagnostics:** a screenshot and the page URL are attached to the HTML report for
-  every failed test.
-- **Parallel and cross-browser:** `pytest-xdist` runs the tests in parallel, and Chrome,
-  Firefox and Edge are selected with `--browser`. Selenium Manager resolves the drivers.
-- **CI:** GitHub Actions runs a lint gate (ruff), then a Chrome and Firefox matrix. Reports are
-  uploaded as artifacts, and a weekly scheduled run catches changes to the site.
+| Concept | Where |
+| --- | --- |
+| Locators: CSS, ID and XPath | page objects in `framework/pages/` |
+| Explicit waits, no `sleep` | `BaseElement` (visibility, clickability, invisibility, stale retries) |
+| Page Object Model | one class per page, shared header in `AuthenticatedPage` |
+| Dropdowns (`Select`) | product sorting |
+| Alerts | `test_browser_interactions.py`: accept and read the error_user sort alert |
+| Mouse actions (`ActionChains`) | hover highlight on a product name |
+| JavaScript execution | read and clear the cart in `localStorage` |
+| Fixtures, setup and teardown | `tests/conftest.py`: driver, login page, logged-in inventory |
+| Parametrisation and markers | users, sort options and validation cases; `smoke` and `defects` markers |
+| Cross-browser and headless | `--browser chrome/firefox/edge`, `--headless` |
+| Reporting | HTML report with a screenshot and URL for every failure |
+| CI | GitHub Actions: ruff lint gate, then a browser × Python matrix |
+
+## How the page objects work
+
+Elements are declared once, as class attributes, and located only when a test uses them:
+
+```python
+class LoginPage(BasePage):
+    username = Input(By.CSS_SELECTOR, "[data-test='username']")
+    login_button = Button(By.CSS_SELECTOR, "[data-test='login-button']")
+```
+
+Each element is a [descriptor](https://docs.python.org/3/howto/descriptor.html). Reading
+`page.username` hands back a copy bound to that page's driver, so every action runs through an
+explicit wait. Templated locators such as `"[data-test='remove-{slug}']"` are filled in with
+`with_args(slug=...)`, and navigation is fluent and typed:
+
+```python
+complete = (
+    inventory.add_to_cart(Product.BACKPACK)
+    .open_cart()
+    .checkout()
+    .continue_to_overview(customer)
+    .finish()
+)
+```
 
 ## Test coverage
 
 | Suite | What it checks |
 | --- | --- |
 | `test_login.py` | Every valid account, locked-out user, missing or wrong credentials, error dismissal, protected-route redirect, logout |
-| `test_inventory.py` | Catalogue contents, all four sort orders, add/remove and cart badge, reset app state, image integrity |
-| `test_cart.py` | Cart contents, empty cart, removal, persistence across navigation and page reload |
-| `test_checkout.py` | Full purchase with subtotal, 8% tax and total checked against catalogue prices; required-field validation; cancel |
-| `test_known_defects.py` | `problem_user` and `error_user` bugs (strict xfail) and the `performance_glitch_user` slowdown (timed) |
+| `test_inventory.py` | Catalogue contents, all four sort orders, add/remove and the cart badge, reset app state, image integrity |
+| `test_cart.py` | Cart contents, empty cart, removal, persistence across navigation and reload |
+| `test_checkout.py` | Full purchase with subtotal, 8% tax and total checked against catalogue prices; required fields; cancel |
+| `test_browser_interactions.py` | Alerts, hover, JavaScript and XPath lookups |
+| `test_known_defects.py` | Bugs in SauceDemo's deliberately broken accounts |
 
-Known defects caught by the suite:
+### Known defects
+
+Each defect is pinned with a strict `xfail` that only accepts an assertion failure. If a bug is
+fixed, or a locator breaks, the build turns red.
 
 | Account | Defect |
 | --- | --- |
@@ -51,7 +73,6 @@ Known defects caught by the suite:
 | `problem_user` | Last-name field on checkout does not accept input |
 | `error_user` | 3 of 6 products cannot be added to the cart |
 | `error_user` | "Finish" does not place the order |
-| `performance_glitch_user` | Login takes about 5 s, compared with about 0.2 s for `standard_user` |
 
 ## Project structure
 
@@ -60,22 +81,22 @@ framework/
 ├── browsers.py            # WebDriver factory (chrome / firefox / edge, headless)
 ├── data.py                # Users, products, sort options, customer data
 ├── elements/
-│   ├── base_element.py    # Descriptor-based lazy element with explicit waits
+│   ├── base_element.py    # Lazy element with explicit waits
 │   └── elements.py        # Button, Input, Dropdown, Collection, Text, Link
 └── pages/
-    ├── base_page.py       # BasePage + AuthenticatedPage (header, menu, cart badge)
+    ├── base_page.py       # BasePage, AuthenticatedPage, ProductListPage
     ├── login_page.py
     ├── inventory_page.py
     ├── cart_page.py
-    └── checkout_pages.py  # Info -> Overview -> Complete
+    └── checkout_pages.py  # Info → Overview → Complete
 tests/
-├── conftest.py            # CLI options, driver/login fixtures, screenshot-on-failure hook
+├── conftest.py            # CLI options, fixtures, screenshot-on-failure hook
 └── test_*.py
 ```
 
 ## Getting started
 
-Requires Python 3.11+ and Chrome or Firefox installed locally.
+Requires Python 3.11+ and Chrome, Firefox or Edge. Selenium Manager downloads the matching driver.
 
 ```bash
 python -m venv .venv
@@ -100,8 +121,8 @@ pytest -m "not defects"                  # skip the known-defect suite
 | `--base-url` | `BASE_URL` | `https://www.saucedemo.com` |
 | `--timeout` | | `10` seconds |
 
-An HTML report is written to `reports/report.html` on every run. Screenshots of failed tests
-are saved to `reports/screenshots/`.
+Every run writes an HTML report to `reports/report.html`. Screenshots of failed tests are saved
+to `reports/screenshots/`.
 
 ## Code quality
 
