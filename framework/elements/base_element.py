@@ -8,14 +8,16 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
+DEFAULT_TIMEOUT = 10.0
+
 
 class BaseElement:
     """A page attribute that binds to the page's driver and is located lazily, with waits."""
 
-    def __init__(self, by: str, selector: str, timeout: float | None = None) -> None:
+    def __init__(self, by: str, selector: str) -> None:
         self.by = by
         self.selector = selector
-        self.timeout = timeout
+        self.timeout = DEFAULT_TIMEOUT
         self.name = self.__class__.__name__
         self._driver: WebDriver | None = None
 
@@ -27,7 +29,7 @@ class BaseElement:
             return self
         bound = copy(self)
         bound._driver = page.driver
-        bound.timeout = self.timeout or page.timeout
+        bound.timeout = page.timeout
         return bound
 
     def __repr__(self) -> str:

@@ -7,28 +7,18 @@ from selenium.webdriver.common.by import By
 from framework.data import Product, SortOption
 from framework.elements import Button, Collection, Dropdown, Text
 from framework.pages import cart_page, login_page
-from framework.pages.base_page import AuthenticatedPage
+from framework.pages.base_page import ProductListPage, parse_price
 
 
-def parse_price(text: str) -> float:
-    return float(text.strip().lstrip("$"))
-
-
-class InventoryPage(AuthenticatedPage):
+class InventoryPage(ProductListPage):
     path = "/inventory.html"
 
     sort_dropdown = Dropdown(By.CSS_SELECTOR, "[data-test='product-sort-container']")
     active_sort = Text(By.CSS_SELECTOR, "[data-test='active-option']")
-    item_names = Collection(By.CSS_SELECTOR, "[data-test='inventory-item-name']")
     item_prices = Collection(By.CSS_SELECTOR, "[data-test='inventory-item-price']")
     item_images = Collection(By.CSS_SELECTOR, "img.inventory_item_img")
     add_to_cart_button = Button(By.CSS_SELECTOR, "[data-test='add-to-cart-{slug}']")
     remove_button = Button(By.CSS_SELECTOR, "[data-test='remove-{slug}']")
-
-    @property
-    def product_names(self) -> list[str]:
-        self.item_names.wait_for_any()
-        return self.item_names.texts
 
     @property
     def product_prices(self) -> list[float]:

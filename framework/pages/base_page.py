@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Self, TypeVar
 
 from selenium.webdriver.common.by import By
@@ -7,11 +8,17 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from framework.elements import BaseElement, Button, Link, Text
-
-DEFAULT_TIMEOUT = 10.0
+from framework.elements import DEFAULT_TIMEOUT, BaseElement, Button, Collection, Link, Text
 
 P = TypeVar("P", bound="BasePage")
+
+
+def parse_price(label: str) -> float:
+    """Read the amount from ``"$29.99"`` or ``"Tax: $2.40"``."""
+    match = re.search(r"\$(\d+(?:\.\d+)?)", label)
+    if not match:
+        raise ValueError(f"No price in {label!r}")
+    return float(match.group(1))
 
 
 class BasePage:
@@ -71,3 +78,13 @@ class AuthenticatedPage(BasePage):
         self.reset_app_state_link.click()
         self.close_menu_button.click()
         return self
+
+
+class ProductListPage(AuthenticatedPage):
+    """A page listing products: the inventory, the cart and the checkout overview."""
+
+    item_names = Collection(By.CSS_SELECTOR, "[data-test='inventory-item-name']")
+
+    @property
+    def product_names(self) -> list[str]:
+        return self.item_names.texts

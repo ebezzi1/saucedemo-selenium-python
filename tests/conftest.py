@@ -10,6 +10,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 
 from framework.browsers import SUPPORTED_BROWSERS, create_driver
 from framework.data import STANDARD_USER, User
+from framework.elements import DEFAULT_TIMEOUT
 from framework.pages import InventoryPage, LoginPage
 
 SCREENSHOT_DIR = Path(__file__).resolve().parent.parent / "reports" / "screenshots"
@@ -34,7 +35,9 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         default=os.getenv("BASE_URL", "https://www.saucedemo.com"),
         help="Application under test (env: BASE_URL)",
     )
-    group.addoption("--timeout", type=float, default=10.0, help="Explicit wait timeout in seconds")
+    group.addoption(
+        "--timeout", type=float, default=DEFAULT_TIMEOUT, help="Explicit wait timeout in seconds"
+    )
 
 
 @pytest.fixture(scope="session")
