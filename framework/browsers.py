@@ -26,6 +26,7 @@ def _chromium_options(options: webdriver.ChromeOptions | webdriver.EdgeOptions, 
 
 def create_driver(browser: str, headless: bool = False) -> WebDriver:
     """Build a local WebDriver. Driver binaries are resolved by Selenium Manager."""
+    driver: WebDriver
     match browser.lower():
         case "chrome":
             driver = webdriver.Chrome(

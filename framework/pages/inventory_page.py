@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 
 from framework.data import Product, SortOption
 from framework.elements import Button, Collection, Dropdown, Text
+from framework.pages import cart_page, login_page
 from framework.pages.base_page import AuthenticatedPage
 
 
@@ -54,3 +55,12 @@ class InventoryPage(AuthenticatedPage):
 
     def is_in_cart(self, product: Product) -> bool:
         return self.remove_button.with_args(slug=product.slug).is_displayed()
+
+    def open_cart(self) -> cart_page.CartPage:
+        self.cart_link.click()
+        return self.go_to(cart_page.CartPage)
+
+    def logout(self) -> login_page.LoginPage:
+        self.menu_button.click()
+        self.logout_link.click()
+        return self.go_to(login_page.LoginPage)

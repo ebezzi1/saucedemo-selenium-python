@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Self
+from typing import Self, TypeVar
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -10,6 +10,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 from framework.elements import BaseElement, Button, Link, Text
 
 DEFAULT_TIMEOUT = 10.0
+
+P = TypeVar("P", bound="BasePage")
 
 
 class BasePage:
@@ -43,7 +45,7 @@ class BasePage:
     def is_current(self) -> bool:
         return self.driver.current_url == self.url
 
-    def go_to(self, page_cls: type[BasePage]) -> BasePage:
+    def go_to(self, page_cls: type[P]) -> P:
         """Construct another page sharing this page's driver and settings, once it has loaded."""
         return page_cls(self.driver, self.base_url, self.timeout).wait_until_loaded()
 
@@ -63,19 +65,6 @@ class AuthenticatedPage(BasePage):
     @property
     def cart_count(self) -> int:
         return int(self.cart_badge.text) if self.cart_badge.is_displayed() else 0
-
-    def open_cart(self):
-        from framework.pages.cart_page import CartPage
-
-        self.cart_link.click()
-        return self.go_to(CartPage)
-
-    def logout(self):
-        from framework.pages.login_page import LoginPage
-
-        self.menu_button.click()
-        self.logout_link.click()
-        return self.go_to(LoginPage)
 
     def reset_app_state(self) -> Self:
         self.menu_button.click()

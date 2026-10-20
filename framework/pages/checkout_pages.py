@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 
 from framework.data import Customer
 from framework.elements import Button, Collection, Input, Text
+from framework.pages import cart_page
 from framework.pages.base_page import AuthenticatedPage
 
 
@@ -37,11 +38,9 @@ class CheckoutInfoPage(AuthenticatedPage):
         self.continue_button.click()
         return self.go_to(CheckoutOverviewPage)
 
-    def cancel(self):
-        from framework.pages.cart_page import CartPage
-
+    def cancel(self) -> cart_page.CartPage:
         self.cancel_button.click()
-        return self.go_to(CartPage)
+        return self.go_to(cart_page.CartPage)
 
 
 class CheckoutOverviewPage(AuthenticatedPage):

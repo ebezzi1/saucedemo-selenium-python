@@ -1,3 +1,4 @@
+# Pages import each other as modules, so two-way navigation survives circular imports.
 from framework.pages.base_page import AuthenticatedPage, BasePage
 from framework.pages.cart_page import CartPage
 from framework.pages.checkout_pages import (

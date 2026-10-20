@@ -83,7 +83,7 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo):
     report = outcome.get_result()
     if report.when not in ("setup", "call") or not report.failed:
         return
-    web_driver: WebDriver | None = item.funcargs.get("driver")
+    web_driver: WebDriver | None = getattr(item, "funcargs", {}).get("driver")
     if web_driver is None:
         return
 

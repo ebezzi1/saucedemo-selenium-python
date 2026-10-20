@@ -4,8 +4,8 @@ from selenium.webdriver.common.by import By
 
 from framework.data import User
 from framework.elements import Button, Input, Text
+from framework.pages import inventory_page
 from framework.pages.base_page import BasePage
-from framework.pages.inventory_page import InventoryPage
 
 
 class LoginPage(BasePage):
@@ -21,6 +21,6 @@ class LoginPage(BasePage):
         self.password.fill(password)
         self.login_button.click()
 
-    def login_as(self, user: User) -> InventoryPage:
+    def login_as(self, user: User) -> inventory_page.InventoryPage:
         self.submit(user.username, user.password)
-        return self.go_to(InventoryPage)
+        return self.go_to(inventory_page.InventoryPage)
