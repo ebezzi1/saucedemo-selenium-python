@@ -22,7 +22,7 @@ def test_hovering_a_product_highlights_its_name(inventory: InventoryPage):
 
 def test_cart_is_stored_in_local_storage(inventory: InventoryPage):
     inventory.add_to_cart(Product.BACKPACK, Product.ONESIE)
-    assert len(inventory.stored_cart()) == 2
+    assert inventory.eventually(lambda: len(inventory.stored_cart()) == inventory.cart_count == 2)
 
     inventory.clear_stored_cart()
     inventory.driver.refresh()

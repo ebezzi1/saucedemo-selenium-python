@@ -5,7 +5,7 @@ from typing import Self
 from selenium.webdriver.common.by import By
 
 from framework.data import Product, SortOption
-from framework.elements import Button, Collection, Dropdown, Text
+from framework.elements import Button, Collection, Dropdown, Link, Text
 from framework.pages import cart_page, login_page
 from framework.pages.base_page import ProductListPage, parse_price
 
@@ -19,10 +19,13 @@ class InventoryPage(ProductListPage):
     item_images = Collection(By.CSS_SELECTOR, "img.inventory_item_img")
     add_to_cart_button = Button(By.CSS_SELECTOR, "[data-test='add-to-cart-{slug}']")
     remove_button = Button(By.CSS_SELECTOR, "[data-test='remove-{slug}']")
+    cart_link = Link(By.CSS_SELECTOR, "[data-test='shopping-cart-link']")
+    logout_link = Link(By.CSS_SELECTOR, "[data-test='logout-sidebar-link']")
     product_title = Text(By.XPATH, "//div[@data-test='inventory-item-name'][text()='{name}']")
     product_price = Text(
         By.XPATH,
-        "//div[@data-test='inventory-item'][.//div[text()='{name}']]"
+        "//div[@data-test='inventory-item']"
+        "[.//div[@data-test='inventory-item-name'][text()='{name}']]"
         "//div[@data-test='inventory-item-price']",
     )
 

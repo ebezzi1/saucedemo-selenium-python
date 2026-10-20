@@ -22,7 +22,7 @@ with Selenium 4, pytest and the Page Object Model, and run in CI on Chrome, Fire
 | Fixtures, setup and teardown | `tests/conftest.py`: driver, login page, logged-in inventory |
 | Parametrisation and markers | users, sort options and validation cases; `smoke` and `defects` markers |
 | Cross-browser and headless | `--browser chrome/firefox/edge`, `--headless` |
-| Reporting | HTML report with a screenshot and URL for every failure |
+| Reporting | HTML report with a screenshot and URL of each failed test |
 | CI | GitHub Actions: ruff lint gate, then a browser × Python matrix |
 
 ## How the page objects work

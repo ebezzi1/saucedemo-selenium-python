@@ -89,10 +89,8 @@ class AuthenticatedPage(BasePage):
 
     title = Text(By.CSS_SELECTOR, "[data-test='title']")
     menu_button = Button(By.ID, "react-burger-menu-btn")
-    logout_link = Link(By.CSS_SELECTOR, "[data-test='logout-sidebar-link']")
     reset_app_state_link = Link(By.CSS_SELECTOR, "[data-test='reset-sidebar-link']")
     close_menu_button = Button(By.ID, "react-burger-cross-btn")
-    cart_link = Link(By.CSS_SELECTOR, "[data-test='shopping-cart-link']")
     cart_badge = Text(By.CSS_SELECTOR, "[data-test='shopping-cart-badge']")
     ready_marker = title
 
