@@ -5,15 +5,13 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
-  schedule:
-    - cron: "0 6 * * 1" # weekly, to catch changes on the site under test
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -27,19 +25,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        browser: [chrome, firefox]
+        browser: [chrome, firefox, edge]
+        python: ["3.12"]
+        include:
+          - browser: chrome
+            python: "3.11" # oldest supported version
+    name: test (${{ matrix.browser }}, py${{ matrix.python }})
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python }}
           cache: pip
       - run: pip install -r requirements.txt
       - name: Run tests
         run: pytest --browser ${{ matrix.browser }} --headless -n 4 --reruns 1
       - name: Upload report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: report-${{ matrix.browser }}
+          name: report-${{ matrix.browser }}-py${{ matrix.python }}
           path: reports/
