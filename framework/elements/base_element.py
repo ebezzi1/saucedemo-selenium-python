@@ -10,12 +10,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 
 class BaseElement:
-    """A lazily-located UI element declared as a class attribute on a page object.
-
-    Elements are descriptors: declaring ``username = Input(By.ID, "user-name")`` on a page
-    gives every page instance a bound element that is located only when it is used, with
-    an explicit wait. This keeps page objects declarative and free of ``find_element`` noise.
-    """
+    """A page attribute that binds to the page's driver and is located lazily, with waits."""
 
     def __init__(self, by: str, selector: str, timeout: float | None = None) -> None:
         self.by = by
@@ -49,15 +44,15 @@ class BaseElement:
         return self._driver
 
     def with_args(self, **kwargs: str) -> BaseElement:
-        """Return a copy whose locator is formatted with ``kwargs`` (for parametrised locators)."""
+        """Fill in a templated locator, e.g. ``"[data-test='remove-{slug}']"``."""
         formatted = copy(self)
         formatted.selector = self.selector.format(**kwargs)
         return formatted
 
-    def _wait(self, timeout: float | None = None) -> WebDriverWait:
+    def _wait(self) -> WebDriverWait:
         return WebDriverWait(
             self.driver,
-            timeout or self.timeout,
+            self.timeout,
             ignored_exceptions=[StaleElementReferenceException],
         )
 
@@ -75,15 +70,12 @@ class BaseElement:
     def text(self) -> str:
         return self.find().text
 
-    def get_attribute(self, name: str) -> str | None:
-        return self.find().get_attribute(name)
-
     def is_displayed(self) -> bool:
         """Non-waiting visibility check, safe to use for asserting absence."""
         elements = self.driver.find_elements(*self.locator)
         return bool(elements) and elements[0].is_displayed()
 
-    def wait_until_invisible(self, timeout: float | None = None) -> None:
-        self._wait(timeout).until(
+    def wait_until_invisible(self) -> None:
+        self._wait().until(
             EC.invisibility_of_element_located(self.locator), f"{self!r} is still visible"
         )

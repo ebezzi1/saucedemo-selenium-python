@@ -1,8 +1,4 @@
-"""SauceDemo ships deliberately broken accounts. These tests run the same checks as the
-standard-user suite against them and are marked ``xfail(strict=True)``: they document the
-defects, and the build turns red if a defect is ever silently fixed (or if the check stops
-detecting it).
-"""
+"""Known bugs in SauceDemo's broken demo accounts, pinned with strict xfails."""
 
 import time
 

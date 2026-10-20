@@ -62,17 +62,11 @@ def login_page(driver: WebDriver, base_url: str, timeout: float) -> LoginPage:
 
 
 @pytest.fixture
-def login_as(driver: WebDriver, base_url: str, timeout: float):
-    """Log in without the UI by seeding the session cookie SauceDemo uses.
-
-    UI login is covered by ``test_login.py``; everywhere else this shortcut keeps tests fast
-    and focused on the feature they actually exercise.
-    """
+def login_as(login_page: LoginPage):
+    """Log in as any user and land on the inventory page."""
 
     def _login(user: User = STANDARD_USER) -> InventoryPage:
-        driver.get(base_url)
-        driver.add_cookie({"name": "session-username", "value": user.username})
-        return InventoryPage(driver, base_url, timeout).open()
+        return login_page.login_as(user)
 
     return _login
 
@@ -84,7 +78,7 @@ def inventory(login_as) -> InventoryPage:
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo):
-    """Attach a screenshot to the HTML report (and save it to disk) when a test fails."""
+    """Save a screenshot of every failure and attach it to the HTML report."""
     outcome = yield
     report = outcome.get_result()
     if report.when not in ("setup", "call") or not report.failed:

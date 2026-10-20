@@ -9,8 +9,6 @@ from framework.pages.inventory_page import InventoryPage
 
 
 class LoginPage(BasePage):
-    path = "/"
-
     username = Input(By.CSS_SELECTOR, "[data-test='username']")
     password = Input(By.CSS_SELECTOR, "[data-test='password']")
     login_button = Button(By.CSS_SELECTOR, "[data-test='login-button']")

@@ -7,7 +7,6 @@ from selenium.webdriver.common.by import By
 from framework.data import Customer
 from framework.elements import Button, Collection, Input, Text
 from framework.pages.base_page import AuthenticatedPage
-from framework.pages.inventory_page import parse_price
 
 
 def _amount(label: str) -> float:
@@ -49,7 +48,6 @@ class CheckoutOverviewPage(AuthenticatedPage):
     path = "/checkout-step-two.html"
 
     item_names = Collection(By.CSS_SELECTOR, "[data-test='inventory-item-name']")
-    item_prices = Collection(By.CSS_SELECTOR, "[data-test='inventory-item-price']")
     subtotal_label = Text(By.CSS_SELECTOR, "[data-test='subtotal-label']")
     tax_label = Text(By.CSS_SELECTOR, "[data-test='tax-label']")
     total_label = Text(By.CSS_SELECTOR, "[data-test='total-label']")
@@ -58,10 +56,6 @@ class CheckoutOverviewPage(AuthenticatedPage):
     @property
     def product_names(self) -> list[str]:
         return self.item_names.texts
-
-    @property
-    def product_prices(self) -> list[float]:
-        return [parse_price(text) for text in self.item_prices.texts]
 
     @property
     def subtotal(self) -> float:
@@ -84,4 +78,3 @@ class CheckoutCompletePage(AuthenticatedPage):
     path = "/checkout-complete.html"
 
     complete_header = Text(By.CSS_SELECTOR, "[data-test='complete-header']")
-    back_home_button = Button(By.CSS_SELECTOR, "[data-test='back-to-products']")

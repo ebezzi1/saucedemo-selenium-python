@@ -12,9 +12,7 @@ class Button(BaseElement):
 
 
 class Link(BaseElement):
-    @property
-    def href(self) -> str | None:
-        return self.get_attribute("href")
+    pass
 
 
 class Text(BaseElement):
@@ -47,10 +45,6 @@ class Dropdown(BaseElement):
     def selected(self) -> str:
         return self._select().first_selected_option.text
 
-    @property
-    def options(self) -> list[str]:
-        return [option.text for option in self._select().options]
-
 
 class Collection(BaseElement):
     """Every element matching a common locator. An empty collection is a valid state."""
@@ -65,13 +59,9 @@ class Collection(BaseElement):
 
     @property
     def texts(self) -> list[str]:
-        # React may re-render the list between locating and reading it, so retry on staleness.
-        # The list is wrapped in a tuple so that an empty (falsy) result still ends the wait.
+        # Retries if React re-renders mid-read; the tuple keeps an empty list "truthy".
         (texts,) = self._wait().until(
             lambda _: ([element.text for element in self.find_all()],),
             f"Could not read {self!r}",
         )
         return texts
-
-    def __len__(self) -> int:
-        return len(self.find_all())
