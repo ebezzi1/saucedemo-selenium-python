@@ -1,7 +1,12 @@
 import pytest
 
-from framework.data import LOCKED_OUT_USER, PASSWORD, USERS_THAT_CAN_LOG_IN, User
+from framework.data import LOCKED_OUT_USER, PASSWORD, STANDARD_USER, USERS_THAT_CAN_LOG_IN, User
 from framework.pages import InventoryPage, LoginPage
+
+
+def visit_inventory_directly(login_page: LoginPage) -> None:
+    login_page.driver.get(login_page.page(InventoryPage).url)
+    login_page.wait_until_loaded()
 
 
 @pytest.mark.smoke
@@ -23,9 +28,9 @@ def test_locked_out_user_is_rejected(login_page: LoginPage):
     ("username", "password", "expected_error"),
     [
         ("", PASSWORD, "Epic sadface: Username is required"),
-        ("standard_user", "", "Epic sadface: Password is required"),
+        (STANDARD_USER.username, "", "Epic sadface: Password is required"),
         (
-            "standard_user",
+            STANDARD_USER.username,
             "wrong_password",
             "Epic sadface: Username and password do not match any user in this service",
         ),
@@ -56,9 +61,8 @@ def test_error_message_can_be_dismissed(login_page: LoginPage):
 
 
 def test_protected_page_requires_login(login_page: LoginPage):
-    login_page.driver.get(f"{login_page.base_url}{InventoryPage.path}")
+    visit_inventory_directly(login_page)
 
-    login_page.wait_until_loaded()
     assert (
         login_page.error.text
         == "Epic sadface: You can only access '/inventory.html' when you are logged in."
@@ -67,8 +71,7 @@ def test_protected_page_requires_login(login_page: LoginPage):
 
 @pytest.mark.smoke
 def test_logout_ends_session(login_page: LoginPage):
-    login_page.login_as(USERS_THAT_CAN_LOG_IN[0]).logout()
+    login_page.login_as(STANDARD_USER).logout()
 
-    login_page.driver.get(f"{login_page.base_url}{InventoryPage.path}")
-    login_page.wait_until_loaded()
+    visit_inventory_directly(login_page)
     assert "when you are logged in" in login_page.error.text

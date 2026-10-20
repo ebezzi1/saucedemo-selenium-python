@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from typing import Self, TypeVar
 
 from selenium.common.exceptions import TimeoutException
@@ -56,6 +57,13 @@ class BasePage:
         except TimeoutException:
             return False
         return True
+
+    def eventually(self, condition: Callable[[], bool]) -> bool:
+        """Poll ``condition`` until it holds or the timeout runs out."""
+        try:
+            return WebDriverWait(self.driver, self.timeout).until(lambda _: condition())
+        except TimeoutException:
+            return False
 
     def is_current(self) -> bool:
         return self.driver.current_url == self.url

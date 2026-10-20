@@ -44,6 +44,7 @@ def test_cart_survives_page_reload(inventory: InventoryPage):
     inventory.add_to_cart(Product.ONESIE)
 
     inventory.driver.refresh()
+    inventory.wait_until_loaded()
 
     assert inventory.cart_count == 1
     assert inventory.is_in_cart(Product.ONESIE)
