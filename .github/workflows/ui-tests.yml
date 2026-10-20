@@ -38,6 +38,9 @@ jobs:
           python-version: ${{ matrix.python }}
           cache: pip
       - run: pip install -r requirements.txt
+      - name: Let Edge use its sandbox # Ubuntu 24.04 blocks it by default
+        if: matrix.browser == 'edge'
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
       - name: Run tests
         run: pytest --browser ${{ matrix.browser }} --headless -n 4 --reruns 1
       - name: Upload report
